@@ -150,13 +150,14 @@ class TopicHz(Node):
 
 def main(args=None):
     rclpy.init()
-    # argv = rclpy.utilities.remove_ros_args()
+    argv = rclpy.utilities.remove_ros_args()
+    argv.pop(0)
 
     parser = argparse.ArgumentParser()
     parser.add_argument('topic_name', help="topic name")
     parser.add_argument('-w', '--window', dest="window_size", type=int,
                         help="window size, default %d" % 30, default=30)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     topic = args.topic_name
     window = args.window_size
