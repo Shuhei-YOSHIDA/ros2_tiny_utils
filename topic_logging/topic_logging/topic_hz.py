@@ -97,7 +97,7 @@ class TopicHz(Node):
             # time reset
             if curr_rostime.nanoseconds == 0:
                 if len(self.get_times(topic=topic)) > 0:
-                    print('time has reset, resetting counters')
+                    print('time has reset, resetting counters', flush=True)
                     self.set_times([], topic=topic)
                 return
 
@@ -144,7 +144,8 @@ class TopicHz(Node):
             return
         time, rate, min_delta, max_delta, std_dev, window = ret
         print('%.3f, %.3f, %.3f, %.3f, %.5f, %s'
-              % (time/1e9, rate*1e9, min_delta*1e-9, max_delta*1e-9, std_dev*1e-9, window))
+              % (time/1e9, rate*1e9, min_delta*1e-9, max_delta*1e-9, std_dev*1e-9, window),
+              flush=True)
         return
 
 
@@ -164,7 +165,7 @@ def main(args=None):
     topic_hz = TopicHz(topic, window)
 
     # rclpy.spin(topic_hz)
-    print("time[s], rate[hz], min_delta[s], max_delta[s], std_dev[s], window")
+    print("time[s], rate[hz], min_delta[s], max_delta[s], std_dev[s], window", flush=True)
     while rclpy.ok():
         rclpy.spin_once(topic_hz)
         topic_hz.print_hz(topic)
