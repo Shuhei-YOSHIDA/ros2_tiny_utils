@@ -17,7 +17,7 @@ time[s], rate[hz], min_delta[s], max_delta[s], std_dev[s], window
 
 You can connect output to pipe or redirect.
 ```
-$ ros2 run topic_logging topic_hz /sampled_topic > sample.csv
+$ ros2 run topic_logging topic_hz /sampled_topic | tee sample.csv
 $ ros2 run topic_logging topic_hz /sampled_topic > sample.csv
 ```
 
