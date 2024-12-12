@@ -5,14 +5,12 @@
     </description>
     <qtgui>
       <group>
-        <!--<label>ros2 tiny utils</label>-->
-        <label>Logger</label>
+        <label>ros2 tiny utils</label>
         <icon type="theme">folder</icon>
-        <statustip>Plugins related to logging.</statustip>
+        <statustip>Plugins related to ros2_tiny_utils.</statustip>
       </group>
       <label>ProgressBar</label>
-      <icon type="theme">image-x-generic</icon>
-      <!--<icon type="theme">face-angel</icon>-->
+      <icon type="theme">face-angel</icon>
       <statustip>A GUI plugin of progress bar</statustip>
     </qtgui>
   </class>

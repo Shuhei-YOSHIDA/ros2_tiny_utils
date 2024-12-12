@@ -6,6 +6,7 @@
 #define INCLUDE_RQT_PROGRESSBAR_RQT_PROGRESSBAR_HPP
 
 #include <rqt_gui_cpp/plugin.h>
+#include "ui_rqt_progressbar.h"
 
 namespace rqt_progressbar
 {
@@ -25,6 +26,9 @@ public:
   virtual void restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
       const qt_gui_cpp::Settings& instance_settings);
 
+protected:
+  Ui::RqtProgressbarWidget _ui;
+  QWidget* _widget;
 
 };
 

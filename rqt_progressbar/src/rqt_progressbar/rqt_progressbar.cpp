@@ -9,14 +9,23 @@ namespace rqt_progressbar
 {
 
 RqtProgressbar::RqtProgressbar()
-  : rqt_gui_cpp::Plugin()
+  : rqt_gui_cpp::Plugin(), _widget(0)
 {
   setObjectName("Rqt_test");
 }
 
-void RqtProgressbarinitPlugin(qt_gui_cpp::PluginContext& context)
+void RqtProgressbar::initPlugin(qt_gui_cpp::PluginContext& context)
 {
+  _widget = new QWidget();
+  _ui.setupUi(_widget);
 
+  if (context.serialNumber() > 1)
+  {
+    _widget->setWindowTitle(
+            _widget->windowTitle()
+            + " (" + QString::number(context.serialNumber()) + ")");
+  }
+  context.addWidget(_widget);
 }
 
 void RqtProgressbar::shutdownPlugin()
