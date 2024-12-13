@@ -71,6 +71,11 @@ void RqtProgressbar::saveSettings(
     qt_gui_cpp::Settings& plugin_settings,
     qt_gui_cpp::Settings& instance_settings) const
 {
+  (void)plugin_settings;
+
+  instance_settings.setValue("start_time", _ui.startUnixLineEdit->text());
+  instance_settings.setValue("end_time", _ui.endUnixLineEdit->text());
+  instance_settings.setValue("is_valid", _is_valid);
 
 }
 
@@ -78,6 +83,16 @@ void RqtProgressbar::restoreSettings(
     const qt_gui_cpp::Settings& plugin_settings,
     const qt_gui_cpp::Settings& instance_settings)
 {
+  (void)plugin_settings;
+  _is_valid = instance_settings.value("is_valid", false).toBool();
+
+  QString s_time_str = instance_settings.value("start_time", "").toString();
+  _ui.startUnixLineEdit->setText(s_time_str);
+  if (!s_time_str.isEmpty()) _start_time = std::stod(s_time_str.toStdString());
+
+  QString e_time_str = instance_settings.value("end_time", "").toString();
+  _ui.endUnixLineEdit->setText(e_time_str);
+  if (!e_time_str.isEmpty()) _end_time = std::stod(e_time_str.toStdString());
 }
 
 void RqtProgressbar::clock_cb(const rosgraph_msgs::msg::Clock::SharedPtr msg)
@@ -121,7 +136,6 @@ bool RqtProgressbar::eventFilter(QObject *watched, QEvent *event)
         return true;
       }
 
-
       try
       {
         // test External process service call -> rosbag2_player will crash
@@ -156,7 +170,7 @@ bool RqtProgressbar::eventFilter(QObject *watched, QEvent *event)
 
 void RqtProgressbar::onLineEdit()
 {
-  std::cout << "edited" << std::endl;
+  //std::cout << "edited" << std::endl;
   if (_ui.startUnixLineEdit->text().isEmpty() || _ui.endUnixLineEdit->text().isEmpty())
   {
     _is_valid = false;
