@@ -1,5 +1,7 @@
 /**
  * @file rqt_progressbar.hpp
+ * @brief Move progressbar with /clock topic
+ *  and call /rosbag2_player/seek service by clicking bar
  */
 
 #ifndef INCLUDE_RQT_PROGRESSBAR_RQT_PROGRESSBAR_HPP
@@ -25,12 +27,12 @@ class RqtProgressbar
 public:
   RqtProgressbar();
 
-  virtual void initPlugin(qt_gui_cpp::PluginContext& context);
-  virtual void shutdownPlugin();
+  virtual void initPlugin(qt_gui_cpp::PluginContext& context) override;
+  virtual void shutdownPlugin() override;
   virtual void saveSettings(qt_gui_cpp::Settings& plugin_settings,
-      qt_gui_cpp::Settings& instance_settings) const;
+      qt_gui_cpp::Settings& instance_settings) const override;
   virtual void restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
-      const qt_gui_cpp::Settings& instance_settings);
+      const qt_gui_cpp::Settings& instance_settings) override;
 
 protected:
   Ui::RqtProgressbarWidget _ui;
@@ -51,8 +53,6 @@ protected:
 
 protected slots:
   virtual void onLineEdit();
-  //virtual void onPushTestButton();
-
 };
 
 } // namespace rqt_progressbar
