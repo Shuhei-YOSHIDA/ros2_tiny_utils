@@ -61,6 +61,7 @@ void RqtProgressbar::initPlugin(qt_gui_cpp::PluginContext& context)
 
   connect(_ui.startUnixLineEdit, SIGNAL(editingFinished()), this, SLOT(onLineEdit()));
   connect(_ui.endUnixLineEdit, SIGNAL(editingFinished()), this, SLOT(onLineEdit()));
+  connect(_ui.testservice, SIGNAL(pressed()), this, SLOT(onPushTestButton()));
 }
 
 void RqtProgressbar::shutdownPlugin()
@@ -209,6 +210,25 @@ void RqtProgressbar::onLineEdit()
   //std::cout << _end_time << std::endl;
 
   _is_valid = true;
+}
+
+// onPushTestButton is not possible to call service?
+void RqtProgressbar::onPushTestButton()
+{
+  std::lock_guard<std::mutex> lock(_mtx);
+
+  // Failed to call service
+  //std::string cmd = "bash -c \"ros2 service call /rosbag2_player/seek rosbag2_interfaces/srv/Seek   'time:\n  sec: 1734212500\n  nanosec: 0' 2>&1 > /dev/null\" \n";
+  // Call by `system()` -> failed
+  //int ret = system(cmd.c_str());
+  //std::cout << "ret: " << ret << std::endl;
+  //_clock_sub->clear_on_new_message_callback();
+
+  // Failed to call service
+  auto request = std::make_shared<rosbag2_interfaces::srv::Seek::Request>();
+  request->time.sec = 1734212500;
+  auto result = _client->async_send_request(request,
+      [this](rclcpp::Client<rosbag2_interfaces::srv::Seek>::SharedFuture future){} );
 }
 
 } // namespace rqt_progressbar
