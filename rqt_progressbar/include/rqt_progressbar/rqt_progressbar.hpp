@@ -5,6 +5,11 @@
 #ifndef INCLUDE_RQT_PROGRESSBAR_RQT_PROGRESSBAR_HPP
 #define INCLUDE_RQT_PROGRESSBAR_RQT_PROGRESSBAR_HPP
 
+#include <qcoreevent.h>
+#include <qobject.h>
+#include <rclcpp/rclcpp.hpp>
+#include <rosgraph_msgs/msg/clock.hpp>
+
 #include <rqt_gui_cpp/plugin.h>
 #include "ui_rqt_progressbar.h"
 
@@ -29,6 +34,11 @@ public:
 protected:
   Ui::RqtProgressbarWidget _ui;
   QWidget* _widget;
+
+  rclcpp::Subscription<rosgraph_msgs::msg::Clock>::SharedPtr _clock_sub;
+  void clock_cb(const rosgraph_msgs::msg::Clock::SharedPtr msg);
+
+  bool eventFilter(QObject *watched, QEvent *event) override;
 
 };
 

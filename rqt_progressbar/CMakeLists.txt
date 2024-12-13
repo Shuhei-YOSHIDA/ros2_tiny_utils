@@ -15,6 +15,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # find dependencies
 find_package(ament_cmake REQUIRED)
 #find_package(rqt_gui REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rosgraph_msgs REQUIRED)
 find_package(rqt_gui_cpp REQUIRED)
 find_package(qt_gui_cpp REQUIRED)
 find_package(Qt5Widgets REQUIRED)
@@ -50,6 +52,8 @@ target_link_libraries(${PROJECT_NAME}
   Qt5::Widgets
 )
 ament_target_dependencies(${PROJECT_NAME}
+  rclcpp
+  rosgraph_msgs
   rqt_gui_cpp
   qt_gui_cpp
 )
