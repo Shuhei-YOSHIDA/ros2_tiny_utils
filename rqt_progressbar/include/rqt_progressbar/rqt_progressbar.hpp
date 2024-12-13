@@ -47,6 +47,8 @@ protected:
   double _start_time;
   double _end_time;
 
+  std::mutex _mtx;
+
 protected slots:
   virtual void onLineEdit();
 

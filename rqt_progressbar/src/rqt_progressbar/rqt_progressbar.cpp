@@ -3,6 +3,7 @@
  */
 
 #include "rqt_progressbar/rqt_progressbar.hpp"
+#include <cstdio>
 #include <stdlib.h>
 #include <exception>
 #include <pluginlib/class_list_macros.hpp>
@@ -97,6 +98,7 @@ void RqtProgressbar::restoreSettings(
 
 void RqtProgressbar::clock_cb(const rosgraph_msgs::msg::Clock::SharedPtr msg)
 {
+  std::lock_guard<std::mutex> lock(_mtx);
   if (!_is_valid) return;
   // Convert clock to percentage
   rclcpp::Time time(msg->clock);
@@ -130,29 +132,48 @@ bool RqtProgressbar::eventFilter(QObject *watched, QEvent *event)
       request->time = t;
       std::cout << request->time.sec << "." << request->time.nanosec << std::endl; // check
 
-      if (!_client->wait_for_service(10ms))
-      {
-        std::cout << "Service: /rosbag2_player/seek is not found" << std::endl;
-        return true;
-      }
+      //_client = this->node_->create_client<rosbag2_interfaces::srv::Seek>("/rosbag2_player/seek");
+      //if (!_client->wait_for_service(10ms))
+      //{
+        //std::cout << "Service: /rosbag2_player/seek is not found" << std::endl;
+        //return true;
+      //}
 
       try
       {
+        std::lock_guard<std::mutex> lock(_mtx);
+
         // test External process service call -> rosbag2_player will crash
-        std::string cmd = "ros2 service call /rosbag2_player/seek rosbag2_interfaces/srv/Seek   'time:\n  sec: 1734212500\n  nanosec: 0'";
-        system(cmd.c_str());
-        //auto result = _client->async_send_request(request); // BAD, crash
-        //if (rclcpp::spin_until_future_complete(this->node_, result) ==
-            //rclcpp::FutureReturnCode::SUCCESS)
-        //{
-          //std::cout << "Seek success" << std::endl;
-        //}
-        //else
-        //{
-          //std::cout << "Seek failed" << std::endl;
-        //}
-        //auto result = _client->create_response();
-        //_client->cal
+        //std::string cmd = "ros2 service call /rosbag2_player/seek rosbag2_interfaces/srv/Seek   'time:\n  sec: 1734212500\n  nanosec: 0'";
+        std::string cmd = "bash -c \"ros2 service call /rosbag2_player/seek rosbag2_interfaces/srv/Seek   'time:\n  sec: 1734212500\n  nanosec: 0' 2>&1 > /dev/null\" \n";
+
+        // Call by `system()` -> failed
+        int ret = system(cmd.c_str());
+        std::cout << "ret: " << ret << std::endl;
+        _clock_sub->clear_on_new_message_callback();
+
+        // Call by `popen()` -> failed
+//        FILE* pipe = popen(cmd.c_str(), "r");
+//        if (!pipe) return false;
+//        char buffer[1024];
+//        while (fgets(buffer, sizeof(buffer), pipe) != nullptr)
+//        {
+//          std::cout << buffer;
+//        } std::cout << std::endl;
+//        pclose(pipe);
+
+        // Call by using async_send_request -> failed
+        // errmsg:[Node '/rqt_gui_cpp_node_2569069' has already been added to an executor.]
+//        auto result = _client->async_send_request(request); // BAD, crash
+//        if (rclcpp::spin_until_future_complete(this->node_, result) ==
+//            rclcpp::FutureReturnCode::SUCCESS)
+//        {
+//          std::cout << "Seek success" << std::endl;
+//        }
+//        else
+//        {
+//          std::cout << "Seek failed" << std::endl;
+//        }
       }
       catch(std::exception& e)
       {
