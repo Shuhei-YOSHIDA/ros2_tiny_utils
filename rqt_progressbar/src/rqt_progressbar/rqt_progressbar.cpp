@@ -174,6 +174,10 @@ bool RqtProgressbar::eventFilter(QObject *watched, QEvent *event)
 //        {
 //          std::cout << "Seek failed" << std::endl;
 //        }
+
+        // Call by usint async_send_request and callback-lambda -> failed
+//        auto result = _client->async_send_request(request,
+//            [this](rclcpp::Client<rosbag2_interfaces::srv::Seek>::SharedFuture future){} );
       }
       catch(std::exception& e)
       {
