@@ -51,7 +51,7 @@ protected:
 
 protected slots:
   virtual void onLineEdit();
-  virtual void onPushTestButton();
+  //virtual void onPushTestButton();
 
 };
 
