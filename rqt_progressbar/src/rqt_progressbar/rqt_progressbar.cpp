@@ -3,14 +3,19 @@
  */
 
 #include "rqt_progressbar/rqt_progressbar.hpp"
+#include <stdlib.h>
+#include <exception>
 #include <pluginlib/class_list_macros.hpp>
 #include <qvalidator.h>
+#include <rclcpp/executors.hpp>
 #include <rclcpp/qos.hpp>
 #include <QMouseEvent>
 #include <QDoubleValidator>
 
 namespace rqt_progressbar
 {
+
+using namespace std::chrono_literals;
 
 RqtProgressbar::RqtProgressbar()
   : rqt_gui_cpp::Plugin(), _widget(0)
@@ -51,6 +56,8 @@ void RqtProgressbar::initPlugin(qt_gui_cpp::PluginContext& context)
           rclcpp::SensorDataQoS(),
           std::bind(&RqtProgressbar::clock_cb, this, std::placeholders::_1));
 
+  _client = this->node_->create_client<rosbag2_interfaces::srv::Seek>("/rosbag2_player/seek");
+
   connect(_ui.startUnixLineEdit, SIGNAL(editingFinished()), this, SLOT(onLineEdit()));
   connect(_ui.endUnixLineEdit, SIGNAL(editingFinished()), this, SLOT(onLineEdit()));
 }
@@ -79,6 +86,7 @@ void RqtProgressbar::clock_cb(const rosgraph_msgs::msg::Clock::SharedPtr msg)
   // Convert clock to percentage
   rclcpp::Time time(msg->clock);
 
+  // Percentage of progressbar
   double v = (time.seconds() - _start_time)/(_end_time - _start_time)*_ui.progressBar->maximum();
   _ui.progressBar->setValue(v);
 }
@@ -96,10 +104,47 @@ bool RqtProgressbar::eventFilter(QObject *watched, QEvent *event)
       int min_value = _ui.progressBar->minimum();
       int max_value = _ui.progressBar->maximum();
 
-      int new_value = min_value + (click_position * (max_value - min_value))/bar_width;
+      // Rate of progressbar
+      double new_value = (double)min_value + ((double)click_position * (max_value - min_value))/bar_width;
       _ui.progressBar->setValue(new_value);
 
       // Call rosbag-seek service
+      auto request = std::make_shared<rosbag2_interfaces::srv::Seek::Request>();
+      double req_time = (1.0 - new_value)*_start_time + new_value*_end_time;
+      rclcpp::Time t(RCL_S_TO_NS(req_time));
+      request->time = t;
+      std::cout << request->time.sec << "." << request->time.nanosec << std::endl; // check
+
+      if (!_client->wait_for_service(10ms))
+      {
+        std::cout << "Service: /rosbag2_player/seek is not found" << std::endl;
+        return true;
+      }
+
+
+      try
+      {
+        // test External process service call -> rosbag2_player will crash
+        std::string cmd = "ros2 service call /rosbag2_player/seek rosbag2_interfaces/srv/Seek   'time:\n  sec: 1734212500\n  nanosec: 0'";
+        system(cmd.c_str());
+        //auto result = _client->async_send_request(request); // BAD, crash
+        //if (rclcpp::spin_until_future_complete(this->node_, result) ==
+            //rclcpp::FutureReturnCode::SUCCESS)
+        //{
+          //std::cout << "Seek success" << std::endl;
+        //}
+        //else
+        //{
+          //std::cout << "Seek failed" << std::endl;
+        //}
+        //auto result = _client->create_response();
+        //_client->cal
+      }
+      catch(std::exception& e)
+      {
+        std::cout << "FAILED: " << e.what() << std::endl;
+        return false;
+      }
     }
 
     return true;

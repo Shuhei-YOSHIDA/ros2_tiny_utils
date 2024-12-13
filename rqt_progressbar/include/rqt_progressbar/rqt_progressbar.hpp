@@ -9,6 +9,7 @@
 #include <qobject.h>
 #include <rclcpp/rclcpp.hpp>
 #include <rosgraph_msgs/msg/clock.hpp>
+#include <rosbag2_interfaces/srv/seek.hpp>
 
 #include <rqt_gui_cpp/plugin.h>
 #include "ui_rqt_progressbar.h"
@@ -37,6 +38,8 @@ protected:
 
   rclcpp::Subscription<rosgraph_msgs::msg::Clock>::SharedPtr _clock_sub;
   void clock_cb(const rosgraph_msgs::msg::Clock::SharedPtr msg);
+
+  rclcpp::Client<rosbag2_interfaces::srv::Seek>::SharedPtr _client;
 
   bool eventFilter(QObject *watched, QEvent *event) override;
 
