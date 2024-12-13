@@ -4,7 +4,10 @@
 
 #include "rqt_progressbar/rqt_progressbar.hpp"
 #include <pluginlib/class_list_macros.hpp>
+#include <qvalidator.h>
 #include <rclcpp/qos.hpp>
+#include <QMouseEvent>
+#include <QDoubleValidator>
 
 namespace rqt_progressbar
 {
@@ -12,7 +15,7 @@ namespace rqt_progressbar
 RqtProgressbar::RqtProgressbar()
   : rqt_gui_cpp::Plugin(), _widget(0)
 {
-  setObjectName("Rqt_test");
+  setObjectName("RqtProgressbarApp");
 }
 
 void RqtProgressbar::initPlugin(qt_gui_cpp::PluginContext& context)
@@ -29,13 +32,19 @@ void RqtProgressbar::initPlugin(qt_gui_cpp::PluginContext& context)
   context.addWidget(_widget);
 
   // test
-  std::cout << _ui.progressBar->minimum() << std::endl;
-  std::cout << _ui.progressBar->maximum() << std::endl;
-  _ui.progressBar->setValue(50);
+  //std::cout << _ui.progressBar->minimum() << std::endl;
+  //std::cout << _ui.progressBar->maximum() << std::endl;
 
+  _ui.progressBar->setValue(0);
 
   // Set event function to click on progress bar
   _ui.progressBar->installEventFilter(this);
+
+  // Validator for LineEdit
+  QDoubleValidator *validator = new QDoubleValidator(0.0, 2147483647.0, 9); // 2023 problem
+  validator->setNotation(QDoubleValidator::StandardNotation);
+  _ui.startUnixLineEdit->setValidator(validator);
+  _ui.endUnixLineEdit->setValidator(validator);
 
   _clock_sub = this->node_->create_subscription<rosgraph_msgs::msg::Clock>(
           "/clock",
@@ -59,22 +68,32 @@ void RqtProgressbar::restoreSettings(
     const qt_gui_cpp::Settings& plugin_settings,
     const qt_gui_cpp::Settings& instance_settings)
 {
-
 }
 
 void RqtProgressbar::clock_cb(const rosgraph_msgs::msg::Clock::SharedPtr msg)
 {
-  //std::cout << "call-back" << std::endl;
+  // Convert clock to percentage
 }
 
 bool RqtProgressbar::eventFilter(QObject *watched, QEvent *event)
 {
-  //std::cout << "called event filter" << std::endl;
   // For progress bar event
   if(watched == _ui.progressBar && event->type() == QEvent::MouseButtonPress)
-  //if(watched == _ui.progressBar && event->type() == QEvent::MouseButtonDblClick)
   {
-    std::cout << "pressed" << std::endl;
+    auto *mouse_event = static_cast<QMouseEvent *>(event);
+    if (mouse_event->button() == Qt::LeftButton)
+    {
+      int bar_width = _ui.progressBar->width();
+      int click_position = mouse_event->pos().x();
+      int min_value = _ui.progressBar->minimum();
+      int max_value = _ui.progressBar->maximum();
+
+      int new_value = min_value + (click_position * (max_value - min_value))/bar_width;
+      _ui.progressBar->setValue(new_value);
+
+      // Call rosbag-seek service
+    }
+
     return true;
   }
 
