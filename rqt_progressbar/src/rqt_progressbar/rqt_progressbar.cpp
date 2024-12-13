@@ -50,6 +50,9 @@ void RqtProgressbar::initPlugin(qt_gui_cpp::PluginContext& context)
           "/clock",
           rclcpp::SensorDataQoS(),
           std::bind(&RqtProgressbar::clock_cb, this, std::placeholders::_1));
+
+  connect(_ui.startUnixLineEdit, SIGNAL(editingFinished()), this, SLOT(onLineEdit()));
+  connect(_ui.endUnixLineEdit, SIGNAL(editingFinished()), this, SLOT(onLineEdit()));
 }
 
 void RqtProgressbar::shutdownPlugin()
@@ -72,7 +75,12 @@ void RqtProgressbar::restoreSettings(
 
 void RqtProgressbar::clock_cb(const rosgraph_msgs::msg::Clock::SharedPtr msg)
 {
+  if (!_is_valid) return;
   // Convert clock to percentage
+  rclcpp::Time time(msg->clock);
+
+  double v = (time.seconds() - _start_time)/(_end_time - _start_time)*_ui.progressBar->maximum();
+  _ui.progressBar->setValue(v);
 }
 
 bool RqtProgressbar::eventFilter(QObject *watched, QEvent *event)
@@ -99,6 +107,24 @@ bool RqtProgressbar::eventFilter(QObject *watched, QEvent *event)
 
   // For other event, default process
   return _widget->eventFilter(watched, event);
+}
+
+void RqtProgressbar::onLineEdit()
+{
+  std::cout << "edited" << std::endl;
+  if (_ui.startUnixLineEdit->text().isEmpty() || _ui.endUnixLineEdit->text().isEmpty())
+  {
+    _is_valid = false;
+    return;
+  }
+
+  _start_time = _ui.startUnixLineEdit->text().toDouble();
+  _end_time = _ui.endUnixLineEdit->text().toDouble();
+
+  //std::cout << _start_time << std::endl;
+  //std::cout << _end_time << std::endl;
+
+  _is_valid = true;
 }
 
 } // namespace rqt_progressbar

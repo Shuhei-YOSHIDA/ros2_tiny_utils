@@ -40,6 +40,13 @@ protected:
 
   bool eventFilter(QObject *watched, QEvent *event) override;
 
+  bool _is_valid = false;
+  double _start_time;
+  double _end_time;
+
+protected slots:
+  virtual void onLineEdit();
+
 };
 
 } // namespace rqt_progressbar
