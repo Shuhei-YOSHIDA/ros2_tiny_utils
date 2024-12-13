@@ -18,6 +18,38 @@ namespace rqt_progressbar
 
 using namespace std::chrono_literals;
 
+std::string convertUnixTimeToLocalTimeWithTimeZone(double unixTime)
+{
+  auto seconds = static_cast<std::time_t>(unixTime);
+  auto nanoseconds = static_cast<long>((unixTime - seconds) * 1e9);
+
+  std::chrono::system_clock::time_point timePoint =
+    std::chrono::system_clock::from_time_t(seconds) +
+    std::chrono::nanoseconds(nanoseconds);
+
+  std::time_t localTime = std::chrono::system_clock::to_time_t(timePoint);
+  std::tm* localTm = std::localtime(&localTime);
+
+  std::ostringstream oss;
+
+  oss << std::put_time(localTm, "%Y-%m-%d %H:%M:%S");
+
+  oss << "." << std::setw(9) << std::setfill('0') << nanoseconds;
+
+  char* tz = std::getenv("TZ");
+  if (tz)
+  {
+    oss << " (" << tz << ")";
+  }
+  else
+  {
+    oss << " (";
+    oss << std::put_time(localTm, "%Z") << ")";
+  }
+
+  return oss.str();
+}
+
 RqtProgressbar::RqtProgressbar()
   : rqt_gui_cpp::Plugin(), _widget(0)
 {
@@ -84,11 +116,21 @@ void RqtProgressbar::restoreSettings(
 
   QString s_time_str = instance_settings.value("start_time", "").toString();
   _ui.startUnixLineEdit->setText(s_time_str);
-  if (!s_time_str.isEmpty()) _start_time = std::stod(s_time_str.toStdString());
+  if (!s_time_str.isEmpty())
+  {
+    _start_time = std::stod(s_time_str.toStdString());
+    auto start_local_time = convertUnixTimeToLocalTimeWithTimeZone(_start_time);
+    _ui.slLineEdit->setText(start_local_time.c_str());
+  }
 
   QString e_time_str = instance_settings.value("end_time", "").toString();
   _ui.endUnixLineEdit->setText(e_time_str);
-  if (!e_time_str.isEmpty()) _end_time = std::stod(e_time_str.toStdString());
+  if (!e_time_str.isEmpty())
+  {
+    _end_time = std::stod(e_time_str.toStdString());
+    auto end_local_time = convertUnixTimeToLocalTimeWithTimeZone(_end_time);
+    _ui.elLineEdit->setText(end_local_time.c_str());
+  }
 }
 
 void RqtProgressbar::clock_cb(const rosgraph_msgs::msg::Clock::SharedPtr msg)
@@ -101,6 +143,9 @@ void RqtProgressbar::clock_cb(const rosgraph_msgs::msg::Clock::SharedPtr msg)
   // Percentage of progressbar
   double v = (time.seconds() - _start_time)/(_end_time - _start_time)*_ui.progressBar->maximum();
   _ui.progressBar->setValue(v);
+
+  auto current_local_time = convertUnixTimeToLocalTimeWithTimeZone(time.seconds());
+  _ui.clLineEdit->setText(current_local_time.c_str());
 }
 
 bool RqtProgressbar::eventFilter(QObject *watched, QEvent *event)
@@ -175,6 +220,12 @@ void RqtProgressbar::onLineEdit()
 
   _start_time = _ui.startUnixLineEdit->text().toDouble();
   _end_time = _ui.endUnixLineEdit->text().toDouble();
+
+  auto start_time_str = convertUnixTimeToLocalTimeWithTimeZone(_start_time);
+  auto end_time_str = convertUnixTimeToLocalTimeWithTimeZone(_end_time);
+
+  _ui.slLineEdit->setText(start_time_str.c_str());
+  _ui.elLineEdit->setText(end_time_str.c_str());
 
   _is_valid = true;
 }
