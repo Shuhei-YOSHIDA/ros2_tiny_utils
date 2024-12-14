@@ -1,0 +1,17 @@
+<library path="rqt_progressbar">
+  <class name="rqt_progressbar/RqtProgressbar" type="rqt_progressbar::RqtProgressbar" base_class_type="rqt_gui_cpp::Plugin">
+    <description>
+      Progress bar for clock or walltime
+    </description>
+    <qtgui>
+      <group>
+        <label>ros2 tiny utils</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to ros2_tiny_utils.</statustip>
+      </group>
+      <label>ProgressBar</label>
+      <icon type="theme">face-angel</icon>
+      <statustip>A GUI plugin of progress bar</statustip>
+    </qtgui>
+  </class>
+</library>
