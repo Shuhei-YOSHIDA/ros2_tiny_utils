@@ -8,8 +8,8 @@ rqt_progressbar
 * Call `/rosbag2_player/seek` service by clicking on progress bar
 
 ### How to use
-* After `colcon build`, you need to execute `rqt --force-discover` to use this RQT plugin.
-* Set start and end Unix-time of your rosbag file.
+* After `colcon build`, you need to execute `rqt --force-discover` to use this RQT plugin for the first time.
+* Set the start and the end of Unix-time of your rosbag file.
 * Play rosbag file such as `$ ros2 bag play --clock <millsecond> <your rosbag>`
 * Click on progress-bar in order to seek the bag file.
 

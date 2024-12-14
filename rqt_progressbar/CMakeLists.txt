@@ -67,13 +67,9 @@ install(
   LIBRARY DESTINATION lib/${PROJECT_NAME}
   RUNTIME DESTINATION bin/${PROJECT_NAME})
 
-#install(PROGRAMS scripts/rqt_image_view
-  #DESTINATION lib/${PROJECT_NAME}
-#)
-
-#install(PROGRAMS scripts/image_publisher
-  #DESTINATION lib/${PROJECT_NAME}
-#)
+install(PROGRAMS scripts/rqt_progressbar
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 install(
   DIRECTORY include/
