@@ -16,3 +16,5 @@ rqt_progressbar
 ### Note
 * The rosbag playing node will crash if the target time for seeking is outside of the recording.
 
+### Sample
+[![Youtube](http://img.youtube.com/vi/4WgkY-Hzbl0/0.jpg)](https://www.youtube.com/watch?v=4WgkY-Hzbl0)
