@@ -3,13 +3,9 @@
  */
 
 #include "rqt_progressbar/rqt_progressbar.hpp"
-#include <cstdio>
-#include <stdlib.h>
 #include <exception>
 #include <pluginlib/class_list_macros.hpp>
 #include <qvalidator.h>
-#include <rclcpp/executors.hpp>
-#include <rclcpp/qos.hpp>
 #include <QMouseEvent>
 #include <QDoubleValidator>
 
@@ -85,10 +81,14 @@ void RqtProgressbar::initPlugin(qt_gui_cpp::PluginContext& context)
           rclcpp::SensorDataQoS(),
           std::bind(&RqtProgressbar::clock_cb, this, std::placeholders::_1));
 
-  _client = this->node_->create_client<rosbag2_interfaces::srv::Seek>("/rosbag2_player/seek");
+  _client_seek = this->node_->create_client<rosbag2_interfaces::srv::Seek>("/rosbag2_player/seek");
+  _client_togglepaused = this->node_->create_client<rosbag2_interfaces::srv::TogglePaused>("/rosbag2_player/toggle_paused");
+  _client_playnext = this->node_->create_client<rosbag2_interfaces::srv::PlayNext>("/rosbag2_player/play_next");
 
   connect(_ui.startUnixLineEdit, SIGNAL(editingFinished()), this, SLOT(onLineEdit()));
   connect(_ui.endUnixLineEdit, SIGNAL(editingFinished()), this, SLOT(onLineEdit()));
+  connect(_ui.togglePaused, SIGNAL(clicked(bool)), this, SLOT(onToggleButtonPushed()));
+  connect(_ui.nextPlay, SIGNAL(clicked(bool)), this, SLOT(onPlayNextButtonPushed()));
 }
 
 void RqtProgressbar::shutdownPlugin()
@@ -175,7 +175,7 @@ bool RqtProgressbar::eventFilter(QObject *watched, QEvent *event)
       //std::cout << request->time.sec << "." << request->time.nanosec << std::endl; // check
       //@NOTE If request time is out of range of bagfile, rosbag2-player will CRASH!
 
-      if (!_client->wait_for_service(10ms))
+      if (!_client_seek->wait_for_service(10ms))
       {
         RCLCPP_ERROR(this->node_->get_logger(), "Service: /rosbag2_player/seek is not found");
         return true;
@@ -193,8 +193,8 @@ bool RqtProgressbar::eventFilter(QObject *watched, QEvent *event)
 
         // Call by using async_send_request and callback-lambda
         // Can't use method of spin.. here
-        auto result = _client->async_send_request(request,
-            [this](rclcpp::Client<rosbag2_interfaces::srv::Seek>::SharedFuture future){} );
+        auto result = _client_seek->async_send_request(request,
+            [this](rclcpp::Client<rosbag2_interfaces::srv::Seek>::SharedFuture){} );
       }
       catch(std::exception& e)
       {
@@ -228,6 +228,40 @@ void RqtProgressbar::onLineEdit()
   _ui.elLineEdit->setText(end_time_str.c_str());
 
   _is_valid = true;
+}
+
+void RqtProgressbar::onToggleButtonPushed()
+{
+  if (!_client_togglepaused->wait_for_service(10ms))
+  {
+    RCLCPP_ERROR(this->node_->get_logger(),
+        "Service: /rosbag2_player/toggle_paused is not found");
+    return;
+  }
+
+  auto request = std::make_shared<rosbag2_interfaces::srv::TogglePaused::Request>();
+
+  auto result = _client_togglepaused->async_send_request(request,
+      [](rclcpp::Client<rosbag2_interfaces::srv::TogglePaused>::SharedFuture){});
+
+  RCLCPP_DEBUG(this->node_->get_logger(), "/rosbag2_player/toggle_paused is called");
+}
+
+void RqtProgressbar::onPlayNextButtonPushed()
+{
+  if (!_client_playnext->wait_for_service(10ms))
+  {
+    RCLCPP_ERROR(this->node_->get_logger(),
+        "Service: /rosbag2_player/play_next is not found");
+    return;
+  }
+
+  auto request = std::make_shared<rosbag2_interfaces::srv::PlayNext::Request>();
+
+  auto result = _client_playnext->async_send_request(request,
+      [](rclcpp::Client<rosbag2_interfaces::srv::PlayNext>::SharedFuture){});
+
+  RCLCPP_DEBUG(this->node_->get_logger(), "/rosbag2_player/PlayNext is called");
 }
 
 } // namespace rqt_progressbar
