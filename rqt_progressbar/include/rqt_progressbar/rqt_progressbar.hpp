@@ -12,6 +12,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rosgraph_msgs/msg/clock.hpp>
 #include <rosbag2_interfaces/srv/seek.hpp>
+#include <rosbag2_interfaces/srv/toggle_paused.hpp>
+#include <rosbag2_interfaces/srv/play_next.hpp>
 
 #include <rqt_gui_cpp/plugin.h>
 #include "ui_rqt_progressbar.h"
@@ -41,7 +43,9 @@ protected:
   rclcpp::Subscription<rosgraph_msgs::msg::Clock>::SharedPtr _clock_sub;
   void clock_cb(const rosgraph_msgs::msg::Clock::SharedPtr msg);
 
-  rclcpp::Client<rosbag2_interfaces::srv::Seek>::SharedPtr _client;
+  rclcpp::Client<rosbag2_interfaces::srv::Seek>::SharedPtr _client_seek;
+  rclcpp::Client<rosbag2_interfaces::srv::TogglePaused>::SharedPtr _client_togglepaused;
+  rclcpp::Client<rosbag2_interfaces::srv::PlayNext>::SharedPtr _client_playnext;
 
   bool eventFilter(QObject *watched, QEvent *event) override;
 
@@ -53,6 +57,8 @@ protected:
 
 protected slots:
   virtual void onLineEdit();
+  virtual void onToggleButtonPushed();
+  virtual void onPlayNextButtonPushed();
 };
 
 } // namespace rqt_progressbar
